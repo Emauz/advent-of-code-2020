@@ -16,15 +16,34 @@ fn main() {
     let values: HashSet<i32> = contents.lines()
                          .map(|line| line.parse::<i32>().unwrap())
                          .collect();
-    part1(&values);
+
+    match part1(&values, 2020) {
+        Some(result) => println!("{}", result),
+        None => println!("Error in part 1"),
+    }
+    match part2(&values) {
+        Some(result) => println!("{}", result),
+        None => println!("Error in part 2"),
+    }
 }
 
-fn part1(values: &HashSet<i32>) {
+fn part1(values: &HashSet<i32>, target: i32) -> Option<i32> {
     for value in values{
-        let diff = 2020 - value;
+        let diff = target - value;
         if values.contains(&diff) {
-            println!("{}", diff * value);
-            return;
+            return Some(diff * value);
         }
     }
+    None
+}
+
+fn part2(values: &HashSet<i32>) -> Option<i32> {
+    for value in values{
+        let diff = 2020 - value;
+        match part1(&values, diff){
+            Some(result) => return Some(value * result),
+            None => continue
+        }
+    }
+    None
 }
