@@ -11,9 +11,9 @@ fn main() {
                               .expect("No filename given");
     let file = File::open(filename).expect("Unable to open file");
     let reader = BufReader::new(file);
-    let mut forest: Vec<Vec<bool>> = vec!(vec!());
+    let mut forest: Vec<Vec<bool>> = Vec::new();
     for line in reader.lines().map(|l| l.expect("Error reading line!")) {
-        let mut trees: Vec<bool> = vec!();
+        let mut trees: Vec<bool> = Vec::new();
         for ch in line.chars() {
             trees.push(if ch == '#' { true } else { false });
         }
@@ -22,8 +22,25 @@ fn main() {
 
     //_test(&forest);
 
-    //part1();
+    part1(&forest);
     //part2();
+}
+
+fn part1(forest: &Vec<Vec<bool>>) {
+    let mut row = 0;
+    let mut col = 0;
+    let delta_row = 1;
+    let delta_col = 3;
+    let mut num_collisions = 0;
+    let forest_width = forest[0].len();
+    loop  {
+        if forest[row][col % forest_width] 
+            { num_collisions += 1 };
+        row += delta_row;
+        col += delta_col;
+        if row >= forest.len() { break; }
+    }
+    println!("{}", num_collisions);
 }
 
 // Function to test if input parsing went ok
