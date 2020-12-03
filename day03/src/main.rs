@@ -22,15 +22,13 @@ fn main() {
 
     //_test(&forest);
 
-    part1(&forest);
-    //part2();
+    println!("{}", part1(&forest, 1, 3));
+    println!("{}", part2(&forest));
 }
 
-fn part1(forest: &Vec<Vec<bool>>) {
+fn part1(forest: &Vec<Vec<bool>>, delta_row: usize, delta_col: usize) -> usize{
     let mut row = 0;
     let mut col = 0;
-    let delta_row = 1;
-    let delta_col = 3;
     let mut num_collisions = 0;
     let forest_width = forest[0].len();
     loop  {
@@ -40,7 +38,17 @@ fn part1(forest: &Vec<Vec<bool>>) {
         col += delta_col;
         if row >= forest.len() { break; }
     }
-    println!("{}", num_collisions);
+    num_collisions
+}
+
+fn part2(forest: &Vec<Vec<bool>>) -> usize {
+    let mut product = 1;
+    product *= part1(forest, 1, 1);
+    product *= part1(forest, 1, 3);
+    product *= part1(forest, 1, 5);
+    product *= part1(forest, 1, 7);
+    product *= part1(forest, 2, 1);
+    product
 }
 
 // Function to test if input parsing went ok
