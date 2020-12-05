@@ -7,10 +7,11 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::collections::HashMap;
 use std::str::FromStr;
+use regex::Regex;
 
-static NUM_FIELDS: usize = 8;
+static NUM_FIELDS: usize = 7;
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 enum Field {
     BirthYear,
     IssueYear,
@@ -53,6 +54,8 @@ fn main() {
     for line in reader.lines().map(|l| l.unwrap()){
         if line.is_empty() {
             // current passport data is complete. push and make a new one.
+            // but first, remove country ID, it's not relevant.
+            current_passport.remove(&Field::CountryID);
             passports.push(current_passport);
             current_passport = HashMap::new();
         } else {
@@ -73,21 +76,121 @@ fn main() {
         }
     }
 
-    println!("{}", part1(passports));
-    //println!("{}", part2());
+    println!("{}", part1(&passports));
+    println!("{}", part2(&passports));
 }
 
-fn part1(passports: Vec<HashMap<Field, String>>) -> usize {
+fn part1(passports: &Vec<HashMap<Field, String>>) -> usize {
     let mut num_valid = 0;
     for passport in passports {
         // check if passport has all required fields
-        let mut existing_fields = passport.keys().len();
-        if passport.contains_key(&Field::CountryID) {
-            existing_fields -= 1;
-        }
-        if existing_fields == (NUM_FIELDS - 1) {
+        let existing_fields = passport.keys().len();
+        if existing_fields == (NUM_FIELDS) {
             num_valid += 1;
         }
     }
     num_valid
+}
+
+fn part2(passports: &Vec<HashMap<Field, String>>) -> usize {
+    let mut num_valid = 0;
+    for passport in passports {
+        if check_validity(&passport){
+            num_valid += 1;
+        }
+    }
+    num_valid
+}
+
+fn check_validity(passport: &HashMap<Field, String>) -> bool {
+    // check if all fields are valid, return false if any fields fail.
+    for (key, val) in passport.iter() {
+        match key {
+            Field::BirthYear => {
+                if val.len() != 4 {
+                    return false
+                }
+                let year: usize = match val.parse() {
+                    Ok(year) => year,
+                    Err(_) => return false,
+                };
+                if (year > 2002) || (year < 1920) {
+                    return false
+                }
+            }
+            Field::IssueYear => {
+                if val.len() != 4 {
+                    return false
+                }
+                let year: usize = match val.parse() {
+                    Ok(year) => year,
+                    Err(_) => return false,
+                };
+                if (year > 2020) || (year < 2010) {
+                    return false
+                }
+            }
+            Field::ExpirationYear => {
+                if val.len() != 4 {
+                    return false
+                }
+                let year: usize = match val.parse() {
+                    Ok(year) => year,
+                    Err(_) => return false
+                };
+                if (year > 2030) || (year < 2020) {
+                    return false
+                }
+            }
+            Field::Height => {
+                let re = Regex::new(r"^([0-9]+)(in|cm)$").unwrap();
+                let caps = match re.captures(val){
+                    Some(caps) => caps,
+                    None => return false,
+                };
+                let number: usize = caps.get(1)
+                                        .unwrap()
+                                        .as_str()
+                                        .parse()
+                                        .unwrap();
+                let unit: &str = caps.get(2)
+                                    .unwrap()
+                                    .as_str();
+                match unit {
+                    "cm" => if (number < 150) || (number > 193) {
+                        return false
+                    },
+                    "in" => if (number < 59) || (number > 76) {
+                        return false
+                    },
+                    _ => return false
+                }
+            }
+            Field::HairColor => {
+                let re = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
+                if !re.is_match(val) {
+                    return false;
+                }
+            }
+            Field::EyeColor => {
+                let valid_colors: [&str; 7] = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
+                if !valid_colors.contains(&val.as_str()) {
+                    return false
+                }
+            }
+            Field::PassportID => {
+                let re = Regex::new(r"^[0-9]{9}$").unwrap();
+                if !re.is_match(val) {
+                    return false;
+                }
+            }
+            _ => ()
+        }
+    }
+    // Check if # fields invalid
+    let existing_fields = passport.keys().len();
+    if existing_fields != (NUM_FIELDS) {
+        return false
+    }
+    true
 }
