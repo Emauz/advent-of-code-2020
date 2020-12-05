@@ -34,7 +34,7 @@ fn main() {
     }
 
     println!("{}", part1(&tickets));
-    //println!("{}", part2(&passports));
+    println!("{}", part2(&tickets).unwrap());
 }
 
 fn part1(tickets: &Vec<(usize, usize)>) -> usize {
@@ -47,4 +47,17 @@ fn part1(tickets: &Vec<(usize, usize)>) -> usize {
         }
     }
     max_id
+}
+
+fn part2(tickets: &Vec<(usize, usize)>) -> Option<usize> {
+    let mut ids: Vec<usize> = tickets.iter()
+                                     .map(|(row, seat)| (row * 8) + seat)
+                                     .collect();
+    ids.sort();
+    for (i, id) in ids.iter().enumerate() {
+        if ids.get(i+1).unwrap() != &(id + 1) {
+            return Some(id + 1);
+        }
+    }
+    None
 }
