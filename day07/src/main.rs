@@ -73,11 +73,10 @@ fn main() {
         }
     }
 
-    let part1_starting = ("shiny".to_string(), "gold".to_string());
-    let part1_result = part1(&bags, part1_starting);
-    //println!("{}", part1_result.len());
-    //println!("{:?}", part1_result);
-    //println!("{}", part2(&groups));
+    let shiny_gold = ("shiny".to_string(), "gold".to_string());
+    let part1_result = part1(&bags, shiny_gold.clone());
+    println!("{}", part1_result.len());
+    println!("{}", part2(&bags, shiny_gold.clone()));
 }
 
 fn part1(bags: &HashMap<(String, String), Bag>, desc: (String, String)) -> HashSet<(String, String)> {
@@ -87,4 +86,14 @@ fn part1(bags: &HashMap<(String, String), Bag>, desc: (String, String)) -> HashS
         output_set.extend(part1(bags, parent.clone()));
     }
     output_set
+}
+
+// calculates number of required child bags within each bag
+fn part2(bags: &HashMap<(String, String), Bag>, desc: (String, String)) -> usize { 
+    let my_bag = bags.get(&desc).expect("Unable to find bag with given description");
+    let mut sum: usize = 0;
+    for (num, child) in my_bag.children.iter() {
+        sum += num * (1 + part2(bags, child.clone()))
+    }
+    sum
 }
