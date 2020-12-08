@@ -1,5 +1,5 @@
 // Advent of code 2020
-// day 7
+// day 8
 // Eric Moss
 
 use std::env;
@@ -9,9 +9,9 @@ use std::collections::HashMap;
 
 
 // Types of instructions supported by machine
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 enum Instruction {
-    Nop,
+    Nop(isize),
     Acc(isize),
     Jmp(isize),
 }
@@ -26,12 +26,13 @@ struct Thread {
 // runs next instruction in thread
 fn execute(thread: &mut Thread) {
     match thread.text[thread.pc] {
-        Instruction::Nop => thread.pc += 1,
+        Instruction::Nop(_) => thread.pc += 1,
         Instruction::Acc(arg) => {
             thread.acc += arg;
             thread.pc += 1;
         },
         Instruction::Jmp(arg) => {
+            // scary casts between signed and unsigned are unfortunately needed
             thread.pc = ((thread.pc as isize) + arg) as usize
         },
     }
@@ -54,7 +55,7 @@ fn main() {
                               .parse()
                               .expect("Unable to parse argument to int");
         let instruction = match op {
-            "nop" => Instruction::Nop,
+            "nop" => Instruction::Nop(arg),
             "acc" => Instruction::Acc(arg),
             "jmp" => Instruction::Jmp(arg),
             _ => panic!("Attempted to parse unknown operation"),
@@ -63,7 +64,7 @@ fn main() {
     }
 
     println!("{}", part1(thread.clone()));
-    //println!("{}", part2(&bags, shiny_gold.clone()));
+    println!("{}", part2(thread.clone()).expect("Got no result for part 2"));
 }
 
 fn part1(mut thread: Thread) -> isize {
@@ -76,4 +77,33 @@ fn part1(mut thread: Thread) -> isize {
         pc_before = thread.pc;
     }
     thread.acc
+}
+
+fn part2(thread: Thread) -> Option<isize> {
+    for (i, instruction) in thread.text.iter().enumerate() {
+        let mut modified_thread = thread.clone();
+        // swap nop and jmp
+        modified_thread.text[i] = match instruction {
+            Instruction::Nop(arg) => Instruction::Jmp(*arg),
+            Instruction::Jmp(arg) => Instruction::Nop(*arg),
+            _ => continue
+        };
+        let mut successors: HashMap<usize, usize> = HashMap::new();
+        // execute until loop or complete
+        let mut pc_before: usize;
+        loop {
+            pc_before = modified_thread.pc;
+            execute(&mut modified_thread);
+            if successors.contains_key(&modified_thread.pc) {
+                // we've just looped
+                break;
+            }
+            if modified_thread.pc >= modified_thread.text.len() {
+                // thread completed execution
+                return Some(modified_thread.acc);
+            }
+            successors.insert(pc_before, modified_thread.pc);
+        }
+    }
+    None
 }
