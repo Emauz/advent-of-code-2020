@@ -6,6 +6,7 @@ use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::collections::{HashSet, VecDeque};
+use std::cmp::Ordering;
 
 //static PREAMBLE_LENGTH: usize = 5;
 static PREAMBLE_LENGTH: usize = 25;
@@ -25,7 +26,7 @@ fn main() {
     }
 
     println!("{}", part1(&series).expect("Unable to get result for part 1"));
-    //println!("{}", part2();
+    println!("{}", part2(&series).expect("Unable to get result for part 2"));
 }
 
 fn part1(series: &Vec<usize>) -> Option<usize> {
@@ -57,4 +58,31 @@ fn part1(series: &Vec<usize>) -> Option<usize> {
         previous.pop_back();
     }
     None
+}
+
+fn part2(series: &Vec<usize>) -> Option<usize> {
+    let invalid_boi = part1(series).unwrap();
+    let mut series = series.iter();
+
+    let mut range: VecDeque<usize> = VecDeque::new();
+    let mut current_sum: usize = 0;
+    // Slide range along series until answer found
+    // (sliding window algorithm!)
+    loop {
+        match current_sum.cmp(&invalid_boi) {
+            Ordering::Less => {
+                let next_val = series.next().expect("Reached end of series");
+                current_sum += next_val;
+                range.push_front(*next_val);
+            },
+            Ordering::Greater => {
+                current_sum -= range.pop_back().unwrap();
+            },
+            Ordering::Equal => {
+                let max = range.iter().max().unwrap();
+                let min = range.iter().min().unwrap();
+                return Some(max + min);
+            },
+        }
+    }
 }
