@@ -39,16 +39,28 @@ fn main() {
     }
 
     println!("{}", part1(&ferry));
-    //println!("{}", part2(&series));
+    println!("{}", part2(&ferry));
 }
 
 fn part1(ferry: &Vec<Vec<(Position, u8)>>) -> i32 {
+    find_stable_seating(ferry, false, 4)
+}
+
+fn part2(ferry: &Vec<Vec<(Position, u8)>>) -> i32 {
+    find_stable_seating(ferry, true, 5)
+}
+
+fn find_stable_seating(ferry: &Vec<Vec<(Position, u8)>>, line_of_sight: bool, max_adj_seats: u8) -> i32 {
     let mut ferry = ferry.clone();
     // loop until seats in a stable position
     let mut prev_taken = -1;
     loop {
-        calculate_adjacency(&mut ferry);
-        swap_seats(&mut ferry);
+        if line_of_sight {
+            calculate_adjacency(&mut ferry, line_of_sight);
+            swap_seats(&mut ferry, max_adj_seats);
+        }
+        calculate_adjacency(&mut ferry, line_of_sight);
+        swap_seats(&mut ferry, max_adj_seats);
         let mut total_taken = 0;
         for row in &ferry {
             for pos in row {
@@ -66,7 +78,7 @@ fn part1(ferry: &Vec<Vec<(Position, u8)>>) -> i32 {
 }
 
 // Calculates number of adjacent taken seats for all positions in ferry
-fn calculate_adjacency(ferry: &mut Vec<Vec<(Position, u8)>>) {
+fn calculate_adjacency(ferry: &mut Vec<Vec<(Position, u8)>>, line_of_sight: bool) {
     let mut new_ferry = ferry.clone();
     for (i, row) in ferry.iter().enumerate() {
         // perform bounds checks
@@ -85,13 +97,38 @@ fn calculate_adjacency(ferry: &mut Vec<Vec<(Position, u8)>>) {
             for other_row in row_bounds.clone() {
                 for other_col in col_bounds.clone() {
                     // make sure we don't include current seat
-                    /*
-                    if other_row == 0 && other_col == 0 {
+                    if other_row == i && other_col == j {
                         continue
                     }
-                    */
-                    if ferry[other_row][other_col].0 == Position::Taken {
-                        sum += 1;
+                    if line_of_sight {
+                        // find all seats in line of sight
+                        let delta_row = other_row as i32 - i as i32;
+                        let delta_col = other_col as i32 - j as i32;
+                        let mut curr_row = i as i32;
+                        let mut curr_col = j as i32;
+                        loop {
+                            curr_row += delta_row;
+                            curr_col += delta_col;
+                            // break if outside edge of array
+                            if curr_row < 0 || curr_row > (ferry.len()-1) as i32 ||
+                               curr_col < 0 || curr_col > (row.len()-1) as i32 {
+                               break
+                            }
+                            match ferry[curr_row as usize][curr_col as usize].0 {
+                                Position::Floor => continue,
+                                Position::Empty => break,
+                                Position::Taken => {
+                                    sum += 1;
+                                    break;
+                                },
+                            }
+                        }
+                    }
+                    else {
+                        // only check immediate seats
+                        if ferry[other_row][other_col].0 == Position::Taken {
+                            sum += 1;
+                        }
                     }
                 }
             }
@@ -101,7 +138,7 @@ fn calculate_adjacency(ferry: &mut Vec<Vec<(Position, u8)>>) {
     *ferry = new_ferry
 }
 
-fn swap_seats(ferry: &mut Vec<Vec<(Position, u8)>>) {
+fn swap_seats(ferry: &mut Vec<Vec<(Position, u8)>>, max_adj_seats: u8) {
     for row in ferry {
         for mut pos in row {
             match pos.0 {
@@ -112,7 +149,7 @@ fn swap_seats(ferry: &mut Vec<Vec<(Position, u8)>>) {
                     }
                 },
                 Position::Taken => {
-                    if pos.1 >= 5 {
+                    if pos.1 >= max_adj_seats {
                         pos.0 = Position::Empty;
                     }
                 },
@@ -121,7 +158,16 @@ fn swap_seats(ferry: &mut Vec<Vec<(Position, u8)>>) {
     }
 }
 
+/*
 fn print_ferry(ferry: &Vec<Vec<(Position, u8)>>) {
+    /*
+    for row in ferry {
+        for pos in row {
+            print!("{}", pos.1);
+        }
+        println!();
+    }
+    */
     for row in ferry {
         for pos in row {
             print!("{}", match pos.0 {
@@ -134,3 +180,4 @@ fn print_ferry(ferry: &Vec<Vec<(Position, u8)>>) {
     }
     println!();
 }
+*/
