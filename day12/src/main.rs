@@ -22,6 +22,12 @@ struct Boat {
     heading: Heading,
 }
 
+#[derive(Default)]
+struct Waypoint {
+    x: i32,
+    y: i32,
+}
+
 #[derive(Debug)]
 enum Instruction {
     N(i32),
@@ -68,7 +74,7 @@ fn main() {
     }
 
     println!("{}", part1(&instructions));
-    //println!("{}", part2(&instructions));
+    println!("{}", part2(&instructions));
 }
 
 fn part1(instructions: &Vec<Instruction>) -> i32 {
@@ -96,6 +102,46 @@ fn part1(instructions: &Vec<Instruction>) -> i32 {
                     Heading::West => { boat.x -= val },
                 };
             },
+        }
+    }
+    let manhattan_distance = boat.x.abs() + boat.y.abs();
+    manhattan_distance
+}
+
+fn part2(instructions: &Vec<Instruction>) -> i32 {
+    let mut boat = Boat { x: 0, y: 0, heading: Heading::East };
+    let mut waypoint = Waypoint { x: 10, y: 1 };
+    for instruction in instructions {
+        match instruction {
+            Instruction::N(val) => { waypoint.y += val },
+            Instruction::S(val) => { waypoint.y -= val },
+            Instruction::E(val) => { waypoint.x += val },
+            Instruction::W(val) => { waypoint.x -= val },
+
+            Instruction::L(val) => {
+                // rotate number of times equal to right angles in degrees
+                for _ in 0..(((val/90) % 4) + 4) % 4 {
+                    let mut new_waypoint = Waypoint::default();
+                    new_waypoint.x = -waypoint.y;
+                    new_waypoint.y = waypoint.x;
+                    waypoint = new_waypoint;
+                }
+            },
+            Instruction::R(val) => {
+                // rotate number of times equal to right angles in degrees
+                for _ in 0..(((val/90) % 4) + 4) % 4 {
+                    let mut new_waypoint = Waypoint::default();
+                    new_waypoint.x = waypoint.y;
+                    new_waypoint.y = -waypoint.x;
+                    waypoint = new_waypoint;
+                }
+            },
+            Instruction::F(val) => {
+                for _ in 0..*val {
+                    boat.x += waypoint.x;
+                    boat.y += waypoint.y;
+                }
+            }
         }
     }
     let manhattan_distance = boat.x.abs() + boat.y.abs();
