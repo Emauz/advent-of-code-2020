@@ -96,7 +96,6 @@ fn part1(instructions: &Vec<Instruction>) -> i32 {
                     Heading::West => { boat.x -= val },
                 };
             },
-            _ => panic!("Invalid instruction found in instructions vector"),
         }
     }
     let manhattan_distance = boat.x.abs() + boat.y.abs();
