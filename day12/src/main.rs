@@ -1,5 +1,5 @@
 // Advent of code 2020
-// day 11
+// day 12
 // Eric Moss
 
 use std::env;
