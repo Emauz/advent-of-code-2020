@@ -22,11 +22,11 @@ fn main() {
                                            .map(|x| x.parse().unwrap())
                                            .collect();
 
-    println!("{}", part1(&starting_numbers));
-    //println!("{}", part2(&instructions));
+    println!("{}", part1(&starting_numbers, 2020));
+    println!("{}", part1(&starting_numbers, 30_000_000));
 }
 
-fn part1(starting_numbers: &Vec<usize>) -> usize {
+fn part1(starting_numbers: &Vec<usize>, target_num: usize) -> usize {
     let last_starting_num: usize = starting_numbers[starting_numbers.len() - 1];
     let starting_numbers = &starting_numbers[0 .. starting_numbers.len() - 1];
     let mut spoken_record: HashMap<usize, usize> = HashMap::new();
@@ -38,7 +38,7 @@ fn part1(starting_numbers: &Vec<usize>) -> usize {
                                                                        .unwrap_or(&starting_numbers.len());
     spoken_record.insert(last_starting_num, starting_numbers.len());
     //println!("{}: {}", starting_numbers.len(), last_starting_num);
-    for i in (starting_numbers.len() + 1) .. 2019 {
+    for i in (starting_numbers.len() + 1) .. target_num - 1 {
         let current_number = next_number;
         //println!("{}: {}", i, next_number);
         next_number = i - spoken_record.get(&next_number)
