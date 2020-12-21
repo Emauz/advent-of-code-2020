@@ -1,0 +1,16 @@
+0: 8 11
+8: 42
+11: 31 42
+31: 1 | 2
+42: 2 1
+1: "a"
+2: "b"
+
+bab
+aab
+aaabb
+aaaab
+abbb
+aaabbbb
+aaaabbb
+baaba
